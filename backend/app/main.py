@@ -9,6 +9,7 @@ import app.models  # Register all models on Base.metadata
 from app.api.v1.auth import router as auth_router
 from app.api.v1.organizations import router as org_router
 from app.api.v1.audit import router as audit_router
+from app.api.v1.tickets import router as tickets_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,3 +48,5 @@ async def health_check():
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(org_router, prefix=settings.API_V1_STR)
 app.include_router(audit_router, prefix=settings.API_V1_STR)
+app.include_router(tickets_router, prefix=settings.API_V1_STR)
+
