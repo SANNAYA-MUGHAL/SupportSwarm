@@ -52,3 +52,25 @@ class AuditService:
         )
         result = await db.execute(stmt)
         return list(result.scalars().all())
+
+    @staticmethod
+    async def get_ticket_audit_logs(
+        db: AsyncSession,
+        organization_id: str,
+        ticket_id: str,
+        limit: int = 50
+    ) -> List[AuditEvent]:
+        """Fetch audit events associated with a specific ticket."""
+        stmt = (
+            select(AuditEvent)
+            .where(
+                AuditEvent.organization_id == organization_id,
+                AuditEvent.entity_type == "ticket",
+                AuditEvent.entity_id == ticket_id
+            )
+            .order_by(desc(AuditEvent.created_at))
+            .limit(limit)
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
+

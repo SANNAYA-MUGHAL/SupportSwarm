@@ -25,3 +25,13 @@ class OrganizationResponse(OrganizationBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class OrganizationMemberResponse(BaseModel):
+    id: str
+    email: str
+    full_name: str
+    role: str
+    is_active: bool = True
+
+    model_config = ConfigDict(from_attributes=True)
+

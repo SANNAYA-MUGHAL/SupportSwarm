@@ -43,14 +43,26 @@ export function Sidebar() {
       title: 'Support Operations',
       items: [
         { name: 'Command Center', href: '/', icon: LayoutDashboard },
-        { name: 'Ticket Inbox', href: '/tickets', icon: Inbox, badge: '105' },
-        { name: 'Voice Console', href: '/voice', icon: Mic, badge: '26' },
+        {
+          name: 'Ticket Inbox',
+          href: '/tickets',
+          icon: Inbox,
+          badge: 'Phase 2 Ready',
+          badgeColor: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+        },
+        {
+          name: 'Voice Console',
+          href: '/voice',
+          icon: Mic,
+          badge: 'Phase 3',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
+        },
         {
           name: 'Approvals Queue',
           href: '/approvals',
           icon: CheckCircle2,
-          badge: '14',
-          badgeColor: 'bg-amber-100 text-amber-800 border border-amber-300'
+          badge: 'Phase 5',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
         },
       ],
     },
@@ -61,22 +73,70 @@ export function Sidebar() {
           name: 'Incidents & Clusters',
           href: '/incidents',
           icon: AlertTriangle,
-          badge: '2 Active',
-          badgeColor: 'bg-rose-100 text-rose-800 border border-rose-300'
+          badge: 'Phase 6',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
         },
-        { name: 'Product Opportunities', href: '/product-intelligence', icon: Lightbulb, badge: '5' },
-        { name: 'Knowledge Base', href: '/knowledge', icon: BookOpen },
-        { name: 'Analytics & SLA', href: '/analytics', icon: BarChart3 },
+        {
+          name: 'Product Opportunities',
+          href: '/product-intelligence',
+          icon: Lightbulb,
+          badge: 'Phase 7',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
+        },
+        {
+          name: 'Knowledge Base',
+          href: '/knowledge',
+          icon: BookOpen,
+          badge: 'Phase 4',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
+        },
+        {
+          name: 'Analytics & SLA',
+          href: '/analytics',
+          icon: BarChart3,
+          badge: 'Phase 8',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
+        },
       ],
     },
     {
       title: 'Agent Orchestration & Governance',
       items: [
-        { name: 'Agent Activity Center', href: '/agents', icon: Bot },
-        { name: 'Integrations Hub', href: '/integrations', icon: Layers },
-        { name: 'Team & RBAC', href: '/team', icon: Users },
-        { name: 'Audit History', href: '/settings/audit', icon: ShieldCheck },
-        { name: 'AI & Safety Settings', href: '/settings/ai', icon: Cpu },
+        {
+          name: 'Agent Activity Center',
+          href: '/agents',
+          icon: Bot,
+          badge: 'Phase 5',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
+        },
+        {
+          name: 'Integrations Hub',
+          href: '/integrations',
+          icon: Layers,
+          badge: 'Phase 4',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
+        },
+        {
+          name: 'Team & RBAC',
+          href: '/team',
+          icon: Users,
+          badge: 'Phase 5',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
+        },
+        {
+          name: 'Audit History',
+          href: '/settings/audit',
+          icon: ShieldCheck,
+          badge: 'Ready',
+          badgeColor: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+        },
+        {
+          name: 'AI & Safety Settings',
+          href: '/settings/ai',
+          icon: Cpu,
+          badge: 'Phase 5',
+          badgeColor: 'bg-slate-800 text-slate-400 border border-slate-700'
+        },
       ],
     },
   ];

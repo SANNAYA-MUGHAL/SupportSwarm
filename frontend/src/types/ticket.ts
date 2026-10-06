@@ -180,3 +180,27 @@ export interface TicketDetailResponse {
   payment?: PaymentSummary;
   allowed_transitions: string[];
 }
+
+export interface AuditEventItem {
+  id: string;
+  organization_id: string;
+  actor_type: string;
+  actor_id?: string;
+  actor_name?: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  old_state_json?: Record<string, any>;
+  new_state_json?: Record<string, any>;
+  ip_address?: string;
+  created_at: string;
+}
+
+export interface MemberItem {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+}
+

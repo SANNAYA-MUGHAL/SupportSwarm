@@ -59,7 +59,31 @@ export class ApiClient {
     });
   }
 
+  static async upload<T>(endpoint: string, formData: FormData): Promise<T> {
+    const token = this.getToken();
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(errorData.detail || `Upload failed with status ${response.status}`);
+    }
+
+    return response.json();
+  }
+
   static delete<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 }
+

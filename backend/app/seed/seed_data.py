@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models import (
     Organization, User, Customer, Order, Payment, Refund,
-    Ticket, TicketMessage, TicketClassification, VoiceTranscript,
+    Ticket, TicketMessage, TicketAttachment, TicketClassification, VoiceTranscript,
     ExtractedEntity, Investigation, InvestigationEvent, KnowledgeArticle,
     KnowledgeArticleVersion, TicketSimilarity, Incident, IncidentTicket,
     BugReport, ProductOpportunity, OpportunityEvidence, CustomerQuote,
@@ -211,7 +211,7 @@ async def seed_database(db: AsyncSession):
 
     # 3. SLA Policies
     sla_res = await db.execute(select(SlaPolicy).where(SlaPolicy.organization_id == org.id))
-    if not sla_res.scalar_one_or_none():
+    if not sla_res.scalars().first():
         sla_policies = [
             SlaPolicy(organization_id=org.id, name="S1 Critical Response", priority="s1_critical", first_response_time_minutes=15, resolution_time_minutes=60),
             SlaPolicy(organization_id=org.id, name="S2 High Response", priority="s2_high", first_response_time_minutes=30, resolution_time_minutes=240),
@@ -575,7 +575,62 @@ async def seed_database(db: AsyncSession):
         )
         db.add(ent)
 
+        # Add sample attachment on every 4th ticket
+        if t_idx % 4 == 0:
+            att = TicketAttachment(
+                ticket_id=ticket.id,
+                file_name=f"transaction_receipt_{10000+t_idx}.pdf",
+                file_type="application/pdf",
+                file_size=184200,
+                storage_url="/storage/attachments/sample_receipt.pdf",
+                created_at=created_time + timedelta(minutes=5)
+            )
+            db.add(att)
+
+        # Add initial audit events
+        audit_created = AuditEvent(
+            organization_id=org.id,
+            actor_type="customer",
+            actor_name=cust.full_name,
+            action="ticket.created",
+            entity_type="ticket",
+            entity_id=ticket.id,
+            new_state_json={"ticket_number": ticket.ticket_number, "channel": ticket.channel, "status": ticket.status},
+            created_at=created_time
+        )
+        db.add(audit_created)
+
+        if status != "new":
+            audit_assigned = AuditEvent(
+                organization_id=org.id,
+                actor_type="user",
+                actor_id=users_by_role["support_lead"].id,
+                actor_name=users_by_role["support_lead"].full_name,
+                action="ticket.assigned",
+                entity_type="ticket",
+                entity_id=ticket.id,
+                new_state_json={"assigned_user_id": assigned_user.id, "assigned_user_name": assigned_user.full_name},
+                created_at=created_time + timedelta(minutes=2)
+            )
+            db.add(audit_assigned)
+
+            audit_status = AuditEvent(
+                organization_id=org.id,
+                actor_type="user",
+                actor_id=assigned_user.id,
+                actor_name=assigned_user.full_name,
+                action="ticket.status_change",
+                entity_type="ticket",
+                entity_id=ticket.id,
+                old_state_json={"status": "new"},
+                new_state_json={"status": status},
+                created_at=created_time + timedelta(minutes=5)
+            )
+            db.add(audit_status)
+
+
         # Add Investigation & Timeline for triaged/investigating tickets
+
         if status in ["investigating", "waiting_for_approval", "waiting_for_customer", "resolved"]:
             inv = Investigation(
                 ticket_id=ticket.id,

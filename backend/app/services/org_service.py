@@ -69,3 +69,14 @@ class OrgService:
         )
 
         return org, admin_user
+
+    @staticmethod
+    async def get_members(db: AsyncSession, org_id: str) -> list[User]:
+        """Fetch all active users in the organization."""
+        result = await db.execute(
+            select(User)
+            .where(User.organization_id == org_id)
+            .order_by(User.full_name)
+        )
+        return list(result.scalars().all())
+

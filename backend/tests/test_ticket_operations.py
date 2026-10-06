@@ -307,3 +307,58 @@ async def test_role_based_permissions(async_client: AsyncClient):
         headers=viewer_headers
     )
     assert assign_res.status_code == 403
+
+@pytest.mark.asyncio
+async def test_get_organization_members(async_client: AsyncClient):
+    login_res = await async_client.post("/api/v1/auth/demo-login", json={"role": "admin", "organization_slug": "demo-fintech"})
+    headers = {"Authorization": f"Bearer {login_res.json()['access_token']}"}
+
+    res = await async_client.get("/api/v1/organizations/members", headers=headers)
+    assert res.status_code == 200
+    members = res.json()
+    assert len(members) >= 1
+    assert any(m["role"] == "admin" for m in members)
+    assert "id" in members[0]
+    assert "full_name" in members[0]
+
+@pytest.mark.asyncio
+async def test_ticket_audit_trail_and_attachments(async_client: AsyncClient):
+    # Setup Lead
+    lead_res = await async_client.post("/api/v1/auth/demo-login", json={"role": "support_lead", "organization_slug": "demo-fintech"})
+    lead_headers = {"Authorization": f"Bearer {lead_res.json()['access_token']}"}
+
+    # 1. Create ticket
+    t_res = await async_client.post(
+        "/api/v1/tickets",
+        json={"customer_name": "Audit Test User", "customer_email": "audit@test.com", "subject": "Audit & Attachment Flow", "description": "Testing audit logging and attachment upload."},
+        headers=lead_headers
+    )
+    assert t_res.status_code == 201
+    t_id = t_res.json()["id"]
+
+    # 2. Add an attachment (simulating upload)
+    files = {"file": ("test_evidence.pdf", b"%PDF-1.4 test evidence document content", "application/pdf")}
+    att_res = await async_client.post(f"/api/v1/tickets/{t_id}/attachments", files=files, headers=lead_headers)
+    assert att_res.status_code == 201
+    att_data = att_res.json()
+    assert att_data["file_name"] == "test_evidence.pdf"
+    assert att_data["file_size"] > 0
+
+    # 3. Add internal note
+    note_res = await async_client.post(
+        f"/api/v1/tickets/{t_id}/messages",
+        json={"content": "Reviewed uploaded evidence and verified validity.", "is_internal_note": True},
+        headers=lead_headers
+    )
+    assert note_res.status_code == 201
+
+    # 4. Fetch ticket audit logs
+    audit_res = await async_client.get(f"/api/v1/tickets/{t_id}/audit", headers=lead_headers)
+    assert audit_res.status_code == 200
+    logs = audit_res.json()
+    assert len(logs) >= 3
+    actions = [l["action"] for l in logs]
+    assert "ticket.created" in actions
+    assert "ticket.attachment_added" in actions
+    assert "ticket.note_added" in actions
+

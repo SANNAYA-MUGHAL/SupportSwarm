@@ -85,21 +85,10 @@ export default function NewTicketPage() {
         if (orderNumber) formData.append('order_number', orderNumber);
         formData.append('audio_file', audioFile);
 
-        const token = localStorage.getItem('supportswarm_token');
-        const res = await fetch('http://127.0.0.1:8000/api/v1/tickets/voice', {
-          method: 'POST',
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          body: formData,
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.detail || 'Failed to upload voice note');
-        }
-
-        const data: TicketDetailResponse = await res.json();
+        const data = await ApiClient.upload<TicketDetailResponse>('/tickets/voice', formData);
         router.push(`/tickets/${data.id}`);
       } else {
+
         // Standard JSON Submit
         const channelMap: Record<IngestionMode, string> = {
           manual: 'web_chat',

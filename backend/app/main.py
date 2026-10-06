@@ -11,6 +11,9 @@ from app.api.v1.organizations import router as org_router
 from app.api.v1.audit import router as audit_router
 from app.api.v1.tickets import router as tickets_router
 
+from fastapi.staticfiles import StaticFiles
+import os
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize schema in development SQLite mode if needed
@@ -25,6 +28,13 @@ app = FastAPI(
     description="SupportSwarm: AI Customer Support & Product Intelligence Platform API",
     lifespan=lifespan
 )
+
+# Mount local storage for audio transcripts and attachments
+os.makedirs(settings.STORAGE_DIR, exist_ok=True)
+os.makedirs(os.path.join(settings.STORAGE_DIR, "audio"), exist_ok=True)
+os.makedirs(os.path.join(settings.STORAGE_DIR, "attachments"), exist_ok=True)
+app.mount("/storage", StaticFiles(directory=settings.STORAGE_DIR), name="storage")
+
 
 # CORS Middleware
 app.add_middleware(

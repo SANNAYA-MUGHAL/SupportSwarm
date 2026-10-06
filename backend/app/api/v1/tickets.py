@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Depends, Query, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,11 +9,14 @@ from app.schemas.ticket import (
     TicketStateTransitionRequest, TicketAssignmentRequest,
     MessageCreateRequest, MessageResponse, AttachmentResponse
 )
+from app.schemas.audit import AuditEventResponse
 from app.services.ticket_service import TicketService
+from app.services.audit_service import AuditService
 from app.services.auth_service import get_current_user
 from app.core.rbac import require_roles, has_permission, UserRole, Permission
 
 router = APIRouter(prefix="/tickets", tags=["Tickets"])
+
 
 @router.get("", response_model=TicketListResponse, status_code=status.HTTP_200_OK)
 async def list_tickets(
@@ -217,3 +220,17 @@ async def add_attachment(
         actor_name=current_user.full_name,
         upload_file=file
     )
+
+@router.get("/{ticket_id}/audit", response_model=List[AuditEventResponse], status_code=status.HTTP_200_OK)
+async def get_ticket_audit(
+    ticket_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Retrieve audit events for a specific ticket."""
+    return await AuditService.get_ticket_audit_logs(
+        db=db,
+        organization_id=current_user.organization_id,
+        ticket_id=ticket_id
+    )
+

@@ -32,3 +32,9 @@ backend/storage/audio/*
 backend/storage/attachments/*
 !backend/storage/audio/.gitkeep
 !backend/storage/attachments/.gitkeep
+
+# Temporary & Test Profiles
+.chrome_data/
+.chrome_qa_profile/
+test_shot.png
+

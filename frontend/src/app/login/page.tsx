@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+
 import { Bot, Shield, ArrowRight, Sparkles, CheckCircle2, Lock } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { UserRole } from '@/types/auth';
@@ -58,6 +59,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loadingRole, setLoadingRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const auto = params.get('auto') as UserRole | null;
+      if (auto && DEMO_ACCOUNTS.some((a) => a.role === auto)) {
+        demoLogin(auto).then(() => {
+          const redirect = params.get('redirect') || '/tickets';
+          router.push(redirect);
+        });
+      }
+    }
+  }, [demoLogin, router]);
+
 
   const handleStandardLogin = async (e: React.FormEvent) => {
     e.preventDefault();
