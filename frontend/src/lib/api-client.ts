@@ -1,4 +1,36 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1';
+/**
+ * Resolves the base URL for API requests:
+ * - If NEXT_PUBLIC_API_URL is explicitly set, use it.
+ * - On the server (Next.js server-side / SSR / Route Handlers):
+ *   use the bound backend service URL (process.env.BACKEND_URL) injected by Vercel.
+ * - In the browser: use relative '/api/v1' which Vercel rewrites directly to the backend service.
+ * - Local server-side fallback: 'http://127.0.0.1:8000/api/v1'.
+ */
+export function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
+  }
+
+  // Server-side execution in Vercel function / Next.js SSR
+  if (typeof window === 'undefined') {
+    if (process.env.BACKEND_URL) {
+      return `${process.env.BACKEND_URL.replace(/\/$/, '')}/api/v1`;
+    }
+    return 'http://127.0.0.1:8000/api/v1';
+  }
+
+  // Client-side in browser: relative path matches Vercel rewrite /api/(.*)
+  return '/api/v1';
+}
+
+export function resolveUrl(endpoint: string): string {
+  if (endpoint.startsWith('http')) {
+    return endpoint;
+  }
+  const baseUrl = getApiBaseUrl();
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${baseUrl}${normalizedEndpoint}`;
+}
 
 export class ApiClient {
   private static getToken(): string | null {
@@ -17,7 +49,7 @@ export class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const url = resolveUrl(endpoint);
     const response = await fetch(url, {
       ...options,
       headers,
@@ -67,7 +99,7 @@ export class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const url = resolveUrl(endpoint);
     const response = await fetch(url, {
       method: 'POST',
       headers,

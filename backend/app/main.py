@@ -26,6 +26,8 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="SupportSwarm: AI Customer Support & Product Intelligence Platform API",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
     lifespan=lifespan
 )
 
@@ -47,6 +49,7 @@ app.add_middleware(
 
 # Health Check
 @app.get("/health", tags=["System"])
+@app.get("/api/health", tags=["System"])
 async def health_check():
     return {
         "status": "healthy",
